@@ -1,4 +1,0 @@
-boot_program = "main.vm"
-debug = true
-max_instructions = 1000000
-display_mode = "debug"
