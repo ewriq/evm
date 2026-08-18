@@ -1,0 +1,3 @@
+    LOAD R0 42
+    PRINT R0
+    HALT
