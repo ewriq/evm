@@ -1,20 +1,27 @@
-package cpu
+package crypto
 
-import 	(
+import (
+	"encoding/binary"
+
 	oc "evm/internal/opcode"
 	register "evm/internal/register"
 )
 
+const InstructionSize = 8
+
 func Decode(data []byte) oc.Instruction {
-	if len(data) < 4 {
+	if len(data) < InstructionSize {
 		panic("invalid instruction size")
 	}
 
 	instruction := oc.Instruction{
 		Opcode: oc.Opcode(data[0]),
-		Arg1:   data[1],
-		Arg2:   data[2],
-		Arg3:   data[3],
+
+		Arg1: binary.LittleEndian.Uint16(data[1:3]),
+		Arg2: binary.LittleEndian.Uint16(data[3:5]),
+		Arg3: binary.LittleEndian.Uint16(data[5:7]),
+
+		Flags: data[7],
 	}
 
 	if !instruction.Opcode.Valid() {
@@ -24,79 +31,37 @@ func Decode(data []byte) oc.Instruction {
 	switch instruction.Opcode {
 
 	case oc.LOAD:
-		if !register.ValidRegister(instruction.Arg1) {
+		if !register.ValidRegister(byte(instruction.Arg1)) {
 			panic("invalid register")
 		}
 
-	case oc.ADD:
-		if !register.ValidRegister(instruction.Arg1) ||
-			!register.ValidRegister(instruction.Arg2) ||
-			!register.ValidRegister(instruction.Arg3) {
+	case oc.ADD, oc.SUB, oc.MUL, oc.DIV:
+		if !register.ValidRegister(byte(instruction.Arg1)) ||
+			!register.ValidRegister(byte(instruction.Arg2)) ||
+			!register.ValidRegister(byte(instruction.Arg3)) {
 			panic("invalid register")
 		}
 
-	case oc.SUB:
-		if !register.ValidRegister(instruction.Arg1) ||
-			!register.ValidRegister(instruction.Arg2) ||
-			!register.ValidRegister(instruction.Arg3) {
+	case oc.PRINT, oc.PUSH, oc.POP:
+		if !register.ValidRegister(byte(instruction.Arg1)) {
 			panic("invalid register")
 		}
 
-	case oc.MUL:
-		if !register.ValidRegister(instruction.Arg1) ||
-			!register.ValidRegister(instruction.Arg2) ||
-			!register.ValidRegister(instruction.Arg3) {
+	case oc.JZ:
+		if !register.ValidRegister(byte(instruction.Arg1)) {
 			panic("invalid register")
 		}
 
-	case oc.DIV:
-		if !register.ValidRegister(instruction.Arg1) ||
-			!register.ValidRegister(instruction.Arg2) ||
-			!register.ValidRegister(instruction.Arg3) {
-			panic("invalid register")
-		}
-
-	case oc.PRINT:
-		if !register.ValidRegister(instruction.Arg1) {
+	case oc.STORE, oc.LOADM:
+		if !register.ValidRegister(byte(instruction.Arg1)) {
 			panic("invalid register")
 		}
 
 	case oc.HALT:
-		break
-
 	case oc.JMP:
-		break
-
-	case oc.JZ:
-		if !register.ValidRegister(instruction.Arg1) {
-			panic("invalid register")
-		}
-
-	case oc.STORE:
-		if !register.ValidRegister(instruction.Arg1) {
-			panic("invalid register")
-		}
-
-	case oc.LOADM:
-		if !register.ValidRegister(instruction.Arg1) {
-			panic("invalid register")
-		}
-
-	case oc.PUSH:
-		if !register.ValidRegister(instruction.Arg1) {
-			panic("invalid register")
-		}
-
-	case oc.POP:
-		if !register.ValidRegister(instruction.Arg1) {
-			panic("invalid register")
-		}
-
 	case oc.CALL:
-		break
-
 	case oc.RET:
-		break
+
 	default:
 		panic("unsupported opcode")
 	}
@@ -104,11 +69,3 @@ func Decode(data []byte) oc.Instruction {
 	return instruction
 }
 
-func Encode(instruction oc.Instruction) []byte {
-	return []byte{
-		byte(instruction.Opcode),
-		instruction.Arg1,
-		instruction.Arg2,
-		instruction.Arg3,
-	}
-}

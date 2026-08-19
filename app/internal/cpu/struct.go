@@ -28,21 +28,28 @@ type CPU struct {
 }
 
 const (
-	CodeStart = 0
-	CodeEnd   = 512
 
-	DataStart = 512
-	DataEnd   = 640
+    DataStart = 0
+    DataEnd   = 1024
 
-	HeapStart = 640
-	HeapEnd   = 768
+    CodeStart = 1024
+    CodeEnd   = 2048
+	HeapStart = 1280
+	HeapEnd   = 1536
 
-	FreeStart = 768
-	FreeEnd   = 896
+	FreeStart = 1536
+	FreeEnd   = 1792
 
-	StackStartAddress = 896
-	StackEndAddress   = 1024
+	StackStartAddress = 1792
+	StackEndAddress   = 2048
+	  MemorySize = 4096
+
+
+    StackStart = 2048
+    StackEnd   = 4096
+   
 )
+
 
 type ControlSignal struct {
 	ALU      bool
@@ -61,3 +68,4 @@ const (
 	ALU_MUL
 	ALU_DIV
 )
+

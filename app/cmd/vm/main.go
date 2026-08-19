@@ -3,7 +3,7 @@ package main
 import (
 	"evm/internal/cpu"
 	"evm/internal/loader"
-	mem	"evm/internal/memory"
+	mem "evm/internal/memory"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 
 	code := data[codeStart:codeEnd]
 
-	memory := mem.NewMemory(1024)
+	memory := mem.NewMemory(2048)
 
 	c := cpu.CPU{
 		Memory:          &memory,
@@ -36,8 +36,7 @@ func main() {
 	}
 
 	c.Load(code)
-
-	c.PC = header.EntryPoint * 4
+	c.PC = c.ProgramStart + header.EntryPoint*8
 
 	c.Run()
 }

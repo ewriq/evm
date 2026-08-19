@@ -1,10 +1,11 @@
 package loader
 
 import (
-	oc "evm/internal/opcode"
 	"fmt"
 	"strconv"
 	"strings"
+
+	oc "evm/internal/opcode"
 )
 
 func Parser(line string) (oc.Instruction, error) {
@@ -31,15 +32,16 @@ func Parser(line string) (oc.Instruction, error) {
 			return oc.Instruction{}, fmt.Errorf("invalid value: %s", parts[2])
 		}
 
-		if value < 0 || value > 255 {
+		if value < 0 || value > 65535 {
 			return oc.Instruction{}, fmt.Errorf("value out of range: %d", value)
 		}
 
 		return oc.Instruction{
 			Opcode: oc.LOAD,
-			Arg1:   register,
-			Arg2:   byte(value),
+			Arg1:   uint16(register),
+			Arg2:   uint16(value),
 		}, nil
+
 	case "SUB":
 		if len(parts) != 4 {
 			return oc.Instruction{}, fmt.Errorf("SUB requires 3 arguments")
@@ -62,10 +64,11 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.SUB,
-			Arg1:   arg1,
-			Arg2:   arg2,
-			Arg3:   arg3,
+			Arg1:   uint16(arg1),
+			Arg2:   uint16(arg2),
+			Arg3:   uint16(arg3),
 		}, nil
+
 	case "ADD":
 		if len(parts) != 4 {
 			return oc.Instruction{}, fmt.Errorf("ADD requires 3 arguments")
@@ -88,10 +91,11 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.ADD,
-			Arg1:   arg1,
-			Arg2:   arg2,
-			Arg3:   arg3,
+			Arg1:   uint16(arg1),
+			Arg2:   uint16(arg2),
+			Arg3:   uint16(arg3),
 		}, nil
+
 	case "PRINT":
 		if len(parts) != 2 {
 			return oc.Instruction{}, fmt.Errorf("PRINT requires 1 argument")
@@ -104,7 +108,7 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.PRINT,
-			Arg1:   register,
+			Arg1:   uint16(register),
 		}, nil
 
 	case "HALT":
@@ -115,6 +119,7 @@ func Parser(line string) (oc.Instruction, error) {
 		return oc.Instruction{
 			Opcode: oc.HALT,
 		}, nil
+
 	case "MUL":
 		if len(parts) != 4 {
 			return oc.Instruction{}, fmt.Errorf("MUL requires 3 arguments")
@@ -137,10 +142,11 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.MUL,
-			Arg1:   arg1,
-			Arg2:   arg2,
-			Arg3:   arg3,
+			Arg1:   uint16(arg1),
+			Arg2:   uint16(arg2),
+			Arg3:   uint16(arg3),
 		}, nil
+
 	case "DIV":
 		if len(parts) != 4 {
 			return oc.Instruction{}, fmt.Errorf("DIV requires 3 arguments")
@@ -163,10 +169,11 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.DIV,
-			Arg1:   arg1,
-			Arg2:   arg2,
-			Arg3:   arg3,
+			Arg1:   uint16(arg1),
+			Arg2:   uint16(arg2),
+			Arg3:   uint16(arg3),
 		}, nil
+
 	case "JMP":
 		if len(parts) != 2 {
 			return oc.Instruction{}, fmt.Errorf("JMP requires 1 argument")
@@ -174,17 +181,24 @@ func Parser(line string) (oc.Instruction, error) {
 
 		target, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return oc.Instruction{}, fmt.Errorf("invalid JMP target: %s", parts[1])
+			return oc.Instruction{}, fmt.Errorf(
+				"invalid JMP target: %s",
+				parts[1],
+			)
 		}
 
-		if target < 0 || target > 255 {
-			return oc.Instruction{}, fmt.Errorf("JMP target out of range: %d", target)
+		if target < 0 || target > 65535 {
+			return oc.Instruction{}, fmt.Errorf(
+				"JMP target out of range: %d",
+				target,
+			)
 		}
 
 		return oc.Instruction{
 			Opcode: oc.JMP,
-			Arg1:   byte(target),
+			Arg1:   uint16(target),
 		}, nil
+
 	case "JZ":
 		if len(parts) != 3 {
 			return oc.Instruction{}, fmt.Errorf("JZ requires 2 arguments")
@@ -203,7 +217,7 @@ func Parser(line string) (oc.Instruction, error) {
 			)
 		}
 
-		if target < 0 || target > 255 {
+		if target < 0 || target > 65535 {
 			return oc.Instruction{}, fmt.Errorf(
 				"JZ target out of range: %d",
 				target,
@@ -212,9 +226,10 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.JZ,
-			Arg1:   register,
-			Arg2:   byte(target),
+			Arg1:   uint16(register),
+			Arg2:   uint16(target),
 		}, nil
+
 	case "STORE":
 		if len(parts) != 3 {
 			return oc.Instruction{}, fmt.Errorf("STORE requires 2 arguments")
@@ -233,7 +248,7 @@ func Parser(line string) (oc.Instruction, error) {
 			)
 		}
 
-		if address < 0 || address > 255 {
+		if address < 0 || address > 65535 {
 			return oc.Instruction{}, fmt.Errorf(
 				"memory address out of range: %d",
 				address,
@@ -242,9 +257,10 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.STORE,
-			Arg1:   register,
-			Arg2:   byte(address),
+			Arg1:   uint16(register),
+			Arg2:   uint16(address),
 		}, nil
+
 	case "LOADM":
 		if len(parts) != 3 {
 			return oc.Instruction{}, fmt.Errorf("LOADM requires 2 arguments")
@@ -263,7 +279,7 @@ func Parser(line string) (oc.Instruction, error) {
 			)
 		}
 
-		if address < 0 || address > 255 {
+		if address < 0 || address > 65535 {
 			return oc.Instruction{}, fmt.Errorf(
 				"memory address out of range: %d",
 				address,
@@ -272,9 +288,10 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.LOADM,
-			Arg1:   register,
-			Arg2:   byte(address),
+			Arg1:   uint16(register),
+			Arg2:   uint16(address),
 		}, nil
+
 	case "PUSH":
 		if len(parts) != 2 {
 			return oc.Instruction{}, fmt.Errorf("PUSH requires 1 argument")
@@ -287,8 +304,9 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.PUSH,
-			Arg1:   register,
+			Arg1:   uint16(register),
 		}, nil
+
 	case "CALL":
 		if len(parts) != 2 {
 			return oc.Instruction{}, fmt.Errorf("CALL requires 1 argument")
@@ -302,7 +320,7 @@ func Parser(line string) (oc.Instruction, error) {
 			)
 		}
 
-		if target < 0 || target > 255 {
+		if target < 0 || target > 65535 {
 			return oc.Instruction{}, fmt.Errorf(
 				"CALL target out of range: %d",
 				target,
@@ -311,8 +329,9 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.CALL,
-			Arg1:   byte(target),
+			Arg1:   uint16(target),
 		}, nil
+
 	case "RET":
 		if len(parts) != 1 {
 			return oc.Instruction{}, fmt.Errorf("RET requires no arguments")
@@ -321,6 +340,7 @@ func Parser(line string) (oc.Instruction, error) {
 		return oc.Instruction{
 			Opcode: oc.RET,
 		}, nil
+
 	case "POP":
 		if len(parts) != 2 {
 			return oc.Instruction{}, fmt.Errorf("POP requires 1 argument")
@@ -333,12 +353,13 @@ func Parser(line string) (oc.Instruction, error) {
 
 		return oc.Instruction{
 			Opcode: oc.POP,
-			Arg1:   register,
+			Arg1:   uint16(register),
 		}, nil
+
 	default:
 		return oc.Instruction{}, fmt.Errorf(
 			"unknown instruction: %s",
 			parts[0],
 		)
 	}
-}
+} 

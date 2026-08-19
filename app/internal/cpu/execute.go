@@ -2,6 +2,7 @@ package cpu
 
 import (
 	"fmt"
+
 	oc "evm/internal/opcode"
 )
 
@@ -15,57 +16,57 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 
 	case oc.LOAD:
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			uint32(instruction.Arg2),
 		)
 
 	case oc.ADD:
-		a := c.Registers.Read(instruction.Arg2)
-		b := c.Registers.Read(instruction.Arg3)
+		a := c.Registers.Read(byte(instruction.Arg2))
+		b := c.Registers.Read(byte(instruction.Arg3))
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			ALU(ALU_ADD, a, b),
 		)
 
 	case oc.SUB:
-		a := c.Registers.Read(instruction.Arg2)
-		b := c.Registers.Read(instruction.Arg3)
+		a := c.Registers.Read(byte(instruction.Arg2))
+		b := c.Registers.Read(byte(instruction.Arg3))
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			ALU(ALU_SUB, a, b),
 		)
 
 	case oc.MUL:
-		a := c.Registers.Read(instruction.Arg2)
-		b := c.Registers.Read(instruction.Arg3)
+		a := c.Registers.Read(byte(instruction.Arg2))
+		b := c.Registers.Read(byte(instruction.Arg3))
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			ALU(ALU_MUL, a, b),
 		)
 
 	case oc.DIV:
-		a := c.Registers.Read(instruction.Arg2)
-		b := c.Registers.Read(instruction.Arg3)
+		a := c.Registers.Read(byte(instruction.Arg2))
+		b := c.Registers.Read(byte(instruction.Arg3))
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			ALU(ALU_DIV, a, b),
 		)
 
 	case oc.PRINT:
 		fmt.Println(
-			c.Registers.Read(instruction.Arg1),
+			c.Registers.Read(byte(instruction.Arg1)),
 		)
 
 	case oc.JMP:
-		c.PC = uint32(instruction.Arg1) * 4
+		c.PC = c.ProgramStart + uint32(instruction.Arg1)*8
 
 	case oc.JZ:
-		if c.Registers.Read(instruction.Arg1) == 0 {
-			c.PC = uint32(instruction.Arg2) * 4
+		if c.Registers.Read(byte(instruction.Arg1)) == 0 {
+			c.PC = c.ProgramStart + uint32(instruction.Arg2)*8
 		}
 
 	case oc.STORE:
@@ -73,7 +74,7 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 
 		c.MemoryInterface.Write(
 			address,
-			byte(c.Registers.Read(instruction.Arg1)),
+			byte(c.Registers.Read(byte(instruction.Arg1))),
 		)
 
 	case oc.LOADM:
@@ -82,7 +83,7 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 		value := c.MemoryInterface.Read(address)
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			uint32(value),
 		)
 
@@ -95,7 +96,7 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 
 		c.MemoryInterface.Write(
 			c.SP,
-			byte(c.Registers.Read(instruction.Arg1)),
+			byte(c.Registers.Read(byte(instruction.Arg1))),
 		)
 
 	case oc.POP:
@@ -106,7 +107,7 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 		value := c.MemoryInterface.Read(c.SP)
 
 		c.Registers.Write(
-			instruction.Arg1,
+			byte(instruction.Arg1),
 			uint32(value),
 		)
 
@@ -123,8 +124,7 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 		c.MemoryInterface.Write(c.SP+1, byte(c.FP>>8))
 		c.MemoryInterface.Write(c.SP+2, byte(c.FP>>16))
 		c.MemoryInterface.Write(c.SP+3, byte(c.FP>>24))
-
-		returnAddress := c.PC + 4
+		returnAddress := c.PC + 8
 
 		c.SP -= 4
 
@@ -132,9 +132,8 @@ func (c *CPU) Execute(instruction oc.Instruction, signal ControlSignal) {
 		c.MemoryInterface.Write(c.SP+1, byte(returnAddress>>8))
 		c.MemoryInterface.Write(c.SP+2, byte(returnAddress>>16))
 		c.MemoryInterface.Write(c.SP+3, byte(returnAddress>>24))
-
 		c.FP = c.SP
-		c.PC = uint32(instruction.Arg1) * 4
+		c.PC = c.ProgramStart + uint32(instruction.Arg1)*8
 
 	case oc.RET:
 		if c.FP < c.StackStart ||

@@ -2,6 +2,8 @@ package cpu
 
 import "fmt"
 
+const InstructionSize = 8
+
 func (c *CPU) Run() {
 	c.Running = true
 
@@ -30,7 +32,7 @@ func (c *CPU) Run() {
 		)
 
 		if c.Running && c.PC == oldPC {
-			c.PC += 4
+			c.PC += InstructionSize
 		}
 	}
 }

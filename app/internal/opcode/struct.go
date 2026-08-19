@@ -22,9 +22,9 @@ const (
 
 type Instruction struct {
 	Opcode Opcode
-	Arg1   byte
-	Arg2   byte
-	Arg3   byte
+	Arg1   uint16
+	Arg2   uint16
+	Arg3   uint16
+	Flags  byte
 }
-
 // LOAD R0 10 
